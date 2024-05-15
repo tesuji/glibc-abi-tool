@@ -48,15 +48,21 @@ jobs:
           path: abilists
           retention-days: 1
 
-  deploy:
-    if: false
-    # needs: [rustdoc]
-    # if: github.event_name != 'pull_request' && github.event.ref == 'refs/heads/master'
+  release:
+    needs: [build]
+    if: github.event_name != 'pull_request' && startsWith(github.event.ref == 'refs/tags')
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write      # to deploy to Pages
       id-token: write   # to verify the deployment originates from an appropriate source
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: abilists
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: abilists
