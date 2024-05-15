@@ -13,6 +13,9 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        zig_version: [master, minimal]
     steps:
       - uses: actions/checkout@v4
       - name: install zigup
@@ -25,7 +28,10 @@ jobs:
       - name: install zig
         run: |
           set -x
-          version=$(cat .zig-version)
+          version=${{ matrix.zig_version }}
+          if [[ $version = "minimal" ]]; then
+            version=$(cat .zig-version)
+          fi
           zigup "$version"
           path=$HOME/zig/"$version"
           echo "$path" >> $GITHUB_PATH
