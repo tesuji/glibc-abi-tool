@@ -33,7 +33,7 @@ jobs:
             version=$(cat .zig-version)
           fi
           zigup "$version"
-          path=$HOME/zig/"$version"
+          path="$HOME/zig/$version"
           echo "$path" >> $GITHUB_PATH
 
       - run: zig build-exe list_symbols.zig
@@ -41,6 +41,7 @@ jobs:
 
       - run: zig run consolidate.zig
       - name: Upload artifact
+        if: matrix.zig_version == 'minimal'
         uses: actions/upload-artifact@v4
         with:
           name: abilists
