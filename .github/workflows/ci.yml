@@ -52,7 +52,7 @@ jobs:
 
   release:
     needs: [build]
-    if: github.event_name != 'pull_request' && startsWith(github.event.ref == 'refs/tags')
+    if: github.event_name != 'pull_request' && startsWith(github.event.ref, 'refs/tags')
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write      # to deploy to Pages
