@@ -1,0 +1,55 @@
+name: build
+
+on:
+  push:
+    branches:
+      - '*'
+      - '!gh-pages'
+  pull_request:
+
+env:
+  DUMMY:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install zigup
+        run: |
+          set -ex
+          mkdir zigup && cd zigup
+          wget https://github.com/marler8997/zigup/releases/download/v2024_05_05/zigup-x86_64-linux.tar.gz
+          tar -xzf zigup-x86_64-linux.tar.gz
+          echo "$(pwd)" >> $GITHUB_PATH
+      - name: install zig
+        run: |
+          set -x
+          version=$(cat .zig-version)
+          zigup "$version"
+          path=$HOME/zig/"$version"
+          echo "$path" >> $GITHUB_PATH
+
+      - run: zig build-exe list_symbols.zig
+      - run: zig build-exe collect_abilist_files.zig
+
+      - run: zig run consolidate.zig
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: abilists
+          path: abilists
+          retention-days: 1
+
+  deploy:
+    if: false
+    # needs: [rustdoc]
+    # if: github.event_name != 'pull_request' && github.event.ref == 'refs/heads/master'
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
